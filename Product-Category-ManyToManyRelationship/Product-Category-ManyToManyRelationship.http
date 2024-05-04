@@ -1,0 +1,6 @@
+@Product_Category_ManyToManyRelationship_HostAddress = http://localhost:5094
+
+GET {{Product_Category_ManyToManyRelationship_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
