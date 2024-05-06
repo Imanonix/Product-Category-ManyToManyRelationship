@@ -1,18 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Domain.Models
 {
     public class Category
     {
-        public Guid Id { get; set; }
+        [Required]
+        public Guid CategoryId { get; set; }
+        [Required]
         public string Name { get; set; } = string.Empty;
         public Guid? ParentId { get; set; } 
         public string? ParentName {  get; set; }
-        public Category? Parent { get; set; } 
+        [JsonIgnore]
+        public Category Parent { get; set; } 
         public ICollection<Category>? SubCategories { get; set;}
 
         public bool IsActive { get; set; }=true;
