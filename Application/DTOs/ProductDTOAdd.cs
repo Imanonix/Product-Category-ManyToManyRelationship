@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -19,5 +20,6 @@ namespace Application.DTOs
         public decimal? Price { get; set; }
 
         public List<Guid> CategoriesList { get; set; }= [];
+        public List<IFormFile> ImagesList { get; set; }= [];
     }
 }

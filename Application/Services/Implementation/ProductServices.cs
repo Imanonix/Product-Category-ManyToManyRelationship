@@ -1,14 +1,19 @@
-﻿using Application.DTOs;
+﻿using Application.Config;
+using Application.DTOs;
 using Application.Services.Interfaces;
 using AutoMapper;
 using Domain.Interfaces.Repository;
 using Domain.Models;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+
+
+
 
 namespace Application.Services.Implementation
 {
@@ -18,19 +23,24 @@ namespace Application.Services.Implementation
         private readonly IProductRepository _productRepository;
         private readonly IProductCategoryRepository _productCategoryRepository;
         private readonly ICategoryRepository _categoryRepository;
-        public ProductServices(IMapper mapper, IProductRepository productRepository, IProductCategoryRepository productCategoryRepository, ICategoryRepository categoryRepository)
+        private readonly Address _address;
+        private readonly IProductImageRepository _productImageRepository;
+        
+
+        public ProductServices(IMapper mapper, IProductRepository productRepository, IProductCategoryRepository productCategoryRepository, ICategoryRepository categoryRepository, IProductImageRepository productImageRepository, IOptions<Address> address)
         {
             _mapper = mapper;
             _productRepository = productRepository;
             _productCategoryRepository = productCategoryRepository;
             _categoryRepository = categoryRepository;
+            _address = address.Value;
+            _productImageRepository = productImageRepository;
         }
         public async Task<ProductDTO> AddProductAsync(ProductDTOAdd productDTOAdd)
         {
             var product = _mapper.Map<Product>(productDTOAdd);
             product = await _productRepository.AddProductAsync(product);
             
-
             foreach (var categoryId in productDTOAdd.CategoriesList)
             {
                 var category = await _categoryRepository.GetByIdAsync(categoryId);
@@ -42,6 +52,31 @@ namespace Application.Services.Implementation
             }
 
             await _productRepository.SaveAsync();
+
+            #region Add images
+            string baseUrl = _address.Scheme + "://" + _address.Host;
+            foreach (var image in productDTOAdd.ImagesList)
+            {
+                string fileName = Guid.NewGuid().ToString() + image.FileName;
+                string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/upload/product/", product.ProductId.ToString());
+                if (!Directory.Exists(folderPath))
+                {
+                    Directory.CreateDirectory(folderPath);
+                }
+                var imagePath = Path.Combine(folderPath, fileName);
+                using (FileStream stream = new FileStream(imagePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(stream);
+                }
+                ProductImage productImage = new ProductImage();
+
+                productImage.ImageUrl = baseUrl+"/upload/product/"+ product.ProductId.ToString()+"/"+fileName;
+                productImage.ProductId = product.ProductId; 
+                await _productImageRepository.AddImageAsync(productImage);
+                await _productRepository.SaveAsync();
+            }
+
+            #endregion
 
             var productDTO = _mapper.Map<ProductDTO>(product);
             return productDTO;

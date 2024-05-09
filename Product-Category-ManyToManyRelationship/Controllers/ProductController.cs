@@ -24,14 +24,15 @@ namespace Product_Category_ManyToManyRelationship.Controllers
 
         [Route("/CreateProduct")]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ProductDTOAdd productDTOAdd)
+        public async Task<IActionResult> Create([FromForm] ProductDTOAdd productDTOAdd)
         {
             if (productDTOAdd == null)
             {
                 return BadRequest("information not completed");
             }
             var createdProduct = await _productServices.AddProductAsync(productDTOAdd);
-            return CreatedAtAction("GetProductById", new { id = createdProduct.ProductId, createdProduct });
+            //return CreatedAtAction("GetProductById", new { id = createdProduct.ProductId, createdProduct });
+            return Ok();
         }
 
     }
