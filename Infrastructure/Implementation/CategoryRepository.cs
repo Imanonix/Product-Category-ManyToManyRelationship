@@ -45,6 +45,18 @@ namespace Infrastructure.Implementation
             return true;
         }
 
+        public async Task<Category> UpdateCategoryAsync(Category category)
+        {
+            if (!_context.Categories.Local.Any(c => c.CategoryId == category.CategoryId))
+            {
+                // Attach the entity if it's detached
+                _context.Attach(category);
+            }
+            _context.Entry(category).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return category;
+        }
+
         public async Task<bool> DeleteCategoryAsync(Category category)
         {
             if (!_context.Categories.Local.Any(c => c.CategoryId == category.CategoryId))

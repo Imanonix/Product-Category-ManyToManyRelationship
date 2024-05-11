@@ -13,6 +13,7 @@ namespace Domain.Interfaces.Repository
         Task<Category> GetByIdAsync(Guid id);
         Task<IEnumerable<Category>> GetAllRootCategory();
         Task<IEnumerable<Category>> GetNestedCategoriesAsync(Category category);
+        Task<Category> UpdateCategoryAsync(Category category);
         Task<bool> DeleteCategoryAsync(Category category);
         Task<bool> SaveAsync();
     }

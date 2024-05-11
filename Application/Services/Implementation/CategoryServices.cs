@@ -64,11 +64,13 @@ namespace Application.Services.Implementation
             return categoryDTO;
         }
 
-
-        public async Task<bool> SaveAsync()
+        public async Task<CategoryDTO> UpdateCategoryAsync(CategoryDTO categoryDTO)
         {
+            var category = _mapper.Map<Category>(categoryDTO);
+            await _categoryRepository.UpdateCategoryAsync(category);
             await _categoryRepository.SaveAsync();
-            return true;
+            categoryDTO = _mapper.Map<CategoryDTO>(category);
+            return categoryDTO;
         }
 
         public async Task<bool> DeleteCategoryAsync(Guid id)
@@ -101,6 +103,12 @@ namespace Application.Services.Implementation
                 await _categoryRepository.DeleteCategoryAsync(category); //After deleting its childs, we delete the category itself
                 await _productCategoryRepository.DeleteByCategoryIdAsync(category); //deleting category from ProductCategory table
             }
+        }
+
+        public async Task<bool> SaveAsync()
+        {
+            await _categoryRepository.SaveAsync();
+            return true;
         }
     }
 }

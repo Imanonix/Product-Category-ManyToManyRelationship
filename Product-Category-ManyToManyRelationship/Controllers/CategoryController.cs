@@ -15,20 +15,6 @@ namespace Product_Category_ManyToManyRelationship.Controllers
             _categoryService = categoryService;
         }
 
-        [Route("/GetAll")]
-        [HttpGet]
-        public async Task<IActionResult> GetAllCategory() {
-
-            var rootCategoryList = await _categoryService.GetAllRootCategoryAsync();
-            var categoryList = await _categoryService.GetRecursiveNestedCategoriesAsync(rootCategoryList);
-            if (categoryList == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(categoryList); //
-        }
-
         [Route("/CreateCategory")]
         [HttpPost]
         public async Task<IActionResult> CreateCategory([FromBody] CategoryDTO categoryDTO)
@@ -42,6 +28,23 @@ namespace Product_Category_ManyToManyRelationship.Controllers
             await _categoryService.SaveAsync();
             return CreatedAtAction(nameof(GetCategoryById), new { id = createdCategory.CategoryId }, createdCategory);
         }
+
+        [Route("/GetAll")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllCategory()
+        {
+
+            var rootCategoryList = await _categoryService.GetAllRootCategoryAsync();
+            var categoryList = await _categoryService.GetRecursiveNestedCategoriesAsync(rootCategoryList);
+            if (categoryList == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(categoryList); //
+        }
+
+
         [Route("/GetCategory/{id}")]
         [HttpGet]
         public async Task<IActionResult> GetCategoryById(Guid id)
@@ -54,9 +57,22 @@ namespace Product_Category_ManyToManyRelationship.Controllers
             return Ok(category);
         }
 
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> UpdateCategory(Guid id, [FromForm] CategoryDTO categoryDTO)
+        {
+            if (categoryDTO.CategoryId != id)
+            {
+                return BadRequest(ModelState);
+            }
+            var updatedCategory = await _categoryService.UpdateCategoryAsync(categoryDTO);
+            return Ok(updatedCategory);
+        }
+
+
         [Route("/Delete/{id}")]
         [HttpDelete]
-        public async Task<IActionResult> Delete (Guid id)
+        public async Task<IActionResult> DeleteCategory (Guid id)
         {
             var isDeleted = await _categoryService.DeleteCategoryAsync(id);
             if (!isDeleted)
