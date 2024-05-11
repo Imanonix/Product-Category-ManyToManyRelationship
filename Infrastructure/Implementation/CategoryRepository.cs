@@ -26,7 +26,7 @@ namespace Infrastructure.Implementation
             var rootCategories = await _context.Categories.Include(c => c.SubCategories).Where(c => c.ParentId == null).ToListAsync();
             return rootCategories?? throw new Exception("list is empty");
         }
-        public async Task<IEnumerable<Category>> GetRecursiveNestedCategoriesAsync(Category category)
+        public async Task<IEnumerable<Category>> GetNestedCategoriesAsync(Category category)
         {
             var nestedCategories = await _context.Categories.Include(c => c.SubCategories).Where(c => c.ParentId == category.CategoryId).ToListAsync();
             return nestedCategories;
@@ -34,12 +34,10 @@ namespace Infrastructure.Implementation
 
         public async Task<Category> GetByIdAsync(Guid id)
         {
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == id);
+            var category = await _context.Categories.Include(c => c.SubCategories).FirstOrDefaultAsync(c => c.CategoryId == id);
 
             return category ?? throw new Exception("not found");
         }
-
-
 
         public async Task<bool> SaveAsync()
         {
@@ -47,5 +45,16 @@ namespace Infrastructure.Implementation
             return true;
         }
 
+        public async Task<bool> DeleteCategoryAsync(Category category)
+        {
+            if (!_context.Categories.Local.Any(c => c.CategoryId == category.CategoryId))
+            {
+                // Attach the entity if it's detached
+                _context.Attach(category);
+            }
+            _context.Entry(category).State = EntityState.Deleted;
+            await _context.SaveChangesAsync(); // Save changes to delete the entity
+            return true;
+        }
     }
 }

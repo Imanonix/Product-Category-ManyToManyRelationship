@@ -10,7 +10,7 @@ namespace Product_Category_ManyToManyRelationship.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryServices _categoryService;
-        public CategoryController(ICategoryServices categoryService) 
+        public CategoryController(ICategoryServices categoryService)
         {
             _categoryService = categoryService;
         }
@@ -25,7 +25,7 @@ namespace Product_Category_ManyToManyRelationship.Controllers
             {
                 return NotFound();
             }
-            
+
             return Ok(categoryList); //
         }
 
@@ -52,6 +52,18 @@ namespace Product_Category_ManyToManyRelationship.Controllers
                 return NotFound();
             }
             return Ok(category);
+        }
+
+        [Route("/Delete/{id}")]
+        [HttpDelete]
+        public async Task<IActionResult> Delete (Guid id)
+        {
+            var isDeleted = await _categoryService.DeleteCategoryAsync(id);
+            if (!isDeleted)
+            {
+                return NotFound();
+            }
+            return NoContent();
         }
     }
 }

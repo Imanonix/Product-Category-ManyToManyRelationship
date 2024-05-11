@@ -14,6 +14,8 @@ namespace Application.Services.Interfaces
         Task<CategoryDTO> GetByIdAsync(Guid id);
         Task<IEnumerable<Category>> GetAllRootCategoryAsync();
         Task<IEnumerable<Category>> GetRecursiveNestedCategoriesAsync(IEnumerable<Category> categoriesList);
+        Task<bool> DeleteCategoryAsync(Guid id);
+        Task DeleteCategoryAndSubCategoryRecursiveAsync(Category category);
         Task<bool> SaveAsync();
     }
 }

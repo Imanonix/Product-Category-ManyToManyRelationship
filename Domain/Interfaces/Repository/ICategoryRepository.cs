@@ -12,7 +12,8 @@ namespace Domain.Interfaces.Repository
         Task<Category> AddCategoryAsync(Category category);
         Task<Category> GetByIdAsync(Guid id);
         Task<IEnumerable<Category>> GetAllRootCategory();
-        Task<IEnumerable<Category>> GetRecursiveNestedCategoriesAsync(Category category);
+        Task<IEnumerable<Category>> GetNestedCategoriesAsync(Category category);
+        Task<bool> DeleteCategoryAsync(Category category);
         Task<bool> SaveAsync();
     }
 }

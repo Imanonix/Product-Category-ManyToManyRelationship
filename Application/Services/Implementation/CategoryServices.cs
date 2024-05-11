@@ -11,11 +11,13 @@ namespace Application.Services.Implementation
     {
         private readonly ICategoryRepository _categoryRepository;
         private readonly IMapper _mapper;
+        private readonly IProductCategoryRepository _productCategoryRepository;
 
-        public CategoryServices(ICategoryRepository categoryRepository, IMapper mapper)
+        public CategoryServices(ICategoryRepository categoryRepository, IMapper mapper, IProductCategoryRepository productCategoryRepository)
         {
             _categoryRepository = categoryRepository;
             _mapper = mapper;
+            _productCategoryRepository = productCategoryRepository;
         }
 
         public async Task<CategoryDTO> AddCategoryAsync(CategoryDTO categoryDTO)
@@ -32,7 +34,7 @@ namespace Application.Services.Implementation
         public async Task<IEnumerable<Category>> GetAllRootCategoryAsync()
         {
             var rootCategories = await _categoryRepository.GetAllRootCategory();
-           
+
             return rootCategories;
         }
 
@@ -40,12 +42,13 @@ namespace Application.Services.Implementation
         {
             foreach (var item in categoriesList)
             {
-                if (item.SubCategories != null)
+                var nestedCategories = await _categoryRepository.GetNestedCategoriesAsync(item);
+                if (nestedCategories.Any())
                 {
-                    await _categoryRepository.GetRecursiveNestedCategoriesAsync(item);
-                    
+                    await GetRecursiveNestedCategoriesAsync(nestedCategories);
                 }
             }
+
             return categoriesList;
         }
 
@@ -66,6 +69,38 @@ namespace Application.Services.Implementation
         {
             await _categoryRepository.SaveAsync();
             return true;
+        }
+
+        public async Task<bool> DeleteCategoryAsync(Guid id)
+        {
+            var category = await _categoryRepository.GetByIdAsync(id);
+            if (category == null)
+            {
+                return false;
+            }
+            await DeleteCategoryAndSubCategoryRecursiveAsync(category);
+
+            await _categoryRepository.SaveAsync();
+            return true;
+        }
+
+        public async Task DeleteCategoryAndSubCategoryRecursiveAsync(Category category)
+        {
+            var listSubCategories = await _categoryRepository.GetNestedCategoriesAsync(category);
+            if (listSubCategories.Count() == 0)
+            {
+                await _categoryRepository.DeleteCategoryAsync(category);
+                await _productCategoryRepository.DeleteByCategoryIdAsync(category);
+            }
+            else
+            {
+                foreach (var sub in listSubCategories)
+                {
+                    await DeleteCategoryAndSubCategoryRecursiveAsync(sub);
+                }
+                await _categoryRepository.DeleteCategoryAsync(category); //After deleting its childs, we delete the category itself
+                await _productCategoryRepository.DeleteByCategoryIdAsync(category); //deleting category from ProductCategory table
+            }
         }
     }
 }

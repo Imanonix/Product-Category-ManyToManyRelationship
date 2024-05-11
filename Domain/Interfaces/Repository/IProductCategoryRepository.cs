@@ -10,5 +10,7 @@ namespace Domain.Interfaces.Repository
     public interface IProductCategoryRepository
     {
         Task<ProductCategory> AddAsync(ProductCategory productCategory);
+        Task<ProductCategory> DeleteAsync(ProductCategory productCategory);
+        Task<bool> DeleteByCategoryIdAsync(Category category);
     }
 }
